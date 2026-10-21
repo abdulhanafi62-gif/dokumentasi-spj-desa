@@ -83,63 +83,66 @@ class _PreviewExportScreenState extends State<PreviewExportScreen> {
                 color: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  children: [
-                    const Text(
-                      'Pilih Format Output:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        // Tombol PDF
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red.shade700,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.picture_as_pdf, size: 20),
-                            label: const Text('Kirim PDF'),
-                            onPressed: _isProcessing ? null : _handleSharePdf,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Tombol Word DOCX
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF185ABD), // Warna khas Word
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            icon: const Icon(Icons.description, size: 20),
-                            label: const Text('Kirim Word'),
-                            onPressed: _isProcessing ? null : _handleShareDocx,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Tombol Cetak / Print Langsung
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.primaryColor,
-                        side: const BorderSide(color: AppTheme.primaryColor),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        minimumSize: const Size(double.infinity, 44),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Pilih Format Output:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      icon: const Icon(Icons.print, size: 20),
-                      label: const Text('Cetak Langsung (Print Preview)'),
-                      onPressed: _isProcessing ? null : _handlePrintPdf,
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          // Tombol PDF
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade700,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              icon: const Icon(Icons.picture_as_pdf, size: 20),
+                              label: const Text('Kirim PDF'),
+                              onPressed: _isProcessing ? null : _handleSharePdf,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Tombol Word DOCX
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF185ABD), // Warna khas Word
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              icon: const Icon(Icons.description, size: 20),
+                              label: const Text('Kirim Word'),
+                              onPressed: _isProcessing ? null : _handleShareDocx,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Tombol Cetak / Print Langsung
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.primaryColor,
+                          side: const BorderSide(color: AppTheme.primaryColor),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          minimumSize: const Size(double.infinity, 44),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        icon: const Icon(Icons.print, size: 20),
+                        label: const Text('Cetak Langsung (Print Preview)'),
+                        onPressed: _isProcessing ? null : _handlePrintPdf,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

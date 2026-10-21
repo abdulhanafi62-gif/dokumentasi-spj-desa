@@ -256,11 +256,13 @@ class _CreateDocumentationScreenState extends State<CreateDocumentationScreen> {
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  children: [
-                    const Text(
-                      'Jenis Kegiatan SPJ:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Jenis Kegiatan SPJ:',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -340,6 +342,7 @@ class _CreateDocumentationScreenState extends State<CreateDocumentationScreen> {
                   ],
                 ),
               ),
+            ),
               const SizedBox(height: 16),
 
               // Bagian Pengambilan Foto
