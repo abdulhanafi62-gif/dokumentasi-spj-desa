@@ -127,7 +127,7 @@ class _CreateDocumentationScreenState extends State<CreateDocumentationScreen> {
       final newPhoto = PhotoItem(
         id: _uuid.v4(),
         filePath: processedFile.path,
-        caption: stageLabel != null ? 'Titik $stageLabel' : '',
+        caption: stageLabel != null ? stageLabel : '',
         stage: stageLabel,
         timestamp: DateTime.now(),
         latitude: lat,
@@ -394,13 +394,15 @@ class _CreateDocumentationScreenState extends State<CreateDocumentationScreen> {
     );
   }
 
-  /// Tampilan khusus pembangunan fisik bertahap: 0%, 50%, 100%, Serah Terima
+  /// Tampilan khusus pembangunan fisik bertahap: 0%, 25%, 50%, 75%, 100%, Serah Terima
   Widget _buildPhysicalProjectStages() {
     final stages = [
-      {'label': 'Titik 0%', 'desc': 'Kondisi awal sebelum proyek dimulai'},
-      {'label': 'Titik 50%', 'desc': 'Proses pengerjaan fisik berlangsung'},
-      {'label': 'Titik 100%', 'desc': 'Pekerjaan fisik telah selesai'},
-      {'label': 'Serah Terima', 'desc': 'Serah terima / papan prasasti proyek'},
+      {'label': 'Titik 0%', 'desc': 'Kondisi awal sebelum pekerjaan dimulai'},
+      {'label': 'Titik 25%', 'desc': 'Tahap awal / pondasi / perataan fisik'},
+      {'label': 'Titik 50%', 'desc': 'Proses pengerjaan tengah / struktur utama'},
+      {'label': 'Titik 75%', 'desc': 'Tahap penyelesaian akhir / finishing'},
+      {'label': 'Titik 100%', 'desc': 'Pekerjaan fisik telah selesai sempurna'},
+      {'label': 'Serah Terima', 'desc': 'Serah terima hasil pekerjaan / prasasti proyek'},
     ];
 
     return Card(
