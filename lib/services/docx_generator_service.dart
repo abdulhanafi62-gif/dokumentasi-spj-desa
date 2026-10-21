@@ -7,7 +7,7 @@ import '../models/documentation_record.dart';
 
 class DocxGeneratorService {
   /// Menghasilkan file Microsoft Word (.docx) berstandar OpenXML A4
-  /// Mendukung susunan Grid 2x2 (maksimal 4 foto per halaman)
+  /// Mendukung susunan Grid 2x2 (maksimal 4 foto per halaman) agar hemat kertas
   static Future<File> generateSpjDocx(
     DocumentationRecord record, {
     int photosPerPage = 4,
@@ -45,7 +45,7 @@ class DocxGeneratorService {
 <w:p>
   <w:pPr>
     <w:jc w:val="center"/>
-    <w:spacing w:before="0" w:after="300"/>
+    <w:spacing w:before="0" w:after="240"/>
   </w:pPr>
   <w:r>
     <w:rPr>
@@ -97,7 +97,7 @@ class DocxGeneratorService {
 <w:p>
   <w:pPr>
     <w:jc w:val="center"/>
-    <w:spacing w:before="100" w:after="240"/>
+    <w:spacing w:before="80" w:after="200"/>
   </w:pPr>
   <w:r>
     <w:rPr>
@@ -111,12 +111,12 @@ class DocxGeneratorService {
       }
 
       // Susun layout tabel 2 kolom untuk Grid 2x2 (Maksimal 4 foto per lembar)
-      if (photosPerPage == 4 && pagePhotos.length > 2) {
-        // Grid 2x2 menggunakan Table Word tanpa border
+      if (pagePhotos.length >= 3 || (photosPerPage == 4 && pagePhotos.length > 1)) {
+        // Grid 2x2 menggunakan Table Word tanpa border agar rapi di A4
         bodyBuffer.writeln('''
 <w:tbl>
   <w:tblPr>
-    <w:tblW w:w="9200" w:type="dxa"/>
+    <w:tblW w:w="9400" w:type="dxa"/>
     <w:jc w:val="center"/>
     <w:tblBorders>
       <w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>
@@ -128,10 +128,16 @@ class DocxGeneratorService {
           bodyBuffer.writeln('<w:tr>');
           for (int c = 0; c < 2; c++) {
             final pIdx = r + c;
-            bodyBuffer.writeln('<w:tc><w:tcPr><w:tcW w:w="4600" w:type="dxa"/></w:tcPr>');
+            bodyBuffer.writeln('<w:tc><w:tcPr><w:tcW w:w="4700" w:type="dxa"/></w:tcPr>');
             if (pIdx < pagePhotos.length) {
               final pData = pagePhotos[pIdx];
-              bodyBuffer.writeln(_buildDocxPhotoXml(pData['rId'], pData['id'], pData['item'], widthEmu: 2900000, heightEmu: 2200000));
+              bodyBuffer.writeln(_buildDocxPhotoXml(
+                pData['rId'],
+                pData['id'],
+                pData['item'],
+                widthEmu: 3050000,
+                heightEmu: 3400000,
+              ));
             } else {
               bodyBuffer.writeln('<w:p/>');
             }
@@ -141,12 +147,18 @@ class DocxGeneratorService {
         }
         bodyBuffer.writeln('</w:tbl>');
       } else {
-        // 1 atau 2 Foto: Tampilkan vertikal besar
-        final int wEmu = pagePhotos.length == 1 ? 5200000 : 4500000;
-        final int hEmu = pagePhotos.length == 1 ? 3900000 : 3100000;
+        // 1 Foto: Tampilkan besar dan memenuhi kertas (seperti contoh pertama pengguna)
+        final int wEmu = pagePhotos.length == 1 ? 5500000 : 4800000;
+        final int hEmu = pagePhotos.length == 1 ? 6200000 : 3300000;
 
         for (final pData in pagePhotos) {
-          bodyBuffer.writeln(_buildDocxPhotoXml(pData['rId'], pData['id'], pData['item'], widthEmu: wEmu, heightEmu: hEmu));
+          bodyBuffer.writeln(_buildDocxPhotoXml(
+            pData['rId'],
+            pData['id'],
+            pData['item'],
+            widthEmu: wEmu,
+            heightEmu: hEmu,
+          ));
         }
       }
 
@@ -167,7 +179,7 @@ class DocxGeneratorService {
     ${bodyBuffer.toString()}
     <w:sectPr>
       <w:pgSz w:w="11906" w:h="16838"/>
-      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:pgMar w:top="1100" w:right="1100" w:bottom="1100" w:left="1100" w:header="720" w:footer="720" w:gutter="0"/>
     </w:sectPr>
   </w:body>
 </w:document>''';
@@ -192,17 +204,33 @@ class DocxGeneratorService {
     required int widthEmu,
     required int heightEmu,
   }) {
-    final captionText = (item.caption != null && (item.caption as String).isNotEmpty)
-        ? item.caption as String
-        : (item.stage != null && (item.stage as String).isNotEmpty
-            ? 'Foto ${item.stage}'
-            : 'Dokumentasi');
+    final caption = item.caption as String? ?? '';
+    final bool hasCustomCaption = caption.trim().isNotEmpty &&
+        !caption.toLowerCase().startsWith('dokumentasi ');
+
+    final captionXml = hasCustomCaption
+        ? '''
+<w:p>
+  <w:pPr>
+    <w:jc w:val="center"/>
+    <w:spacing w:before="40" w:after="120"/>
+  </w:pPr>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+      <w:b/>
+      <w:sz w:val="20"/>
+    </w:rPr>
+    <w:t>${_escapeXml(caption)}</w:t>
+  </w:r>
+</w:p>'''
+        : '';
 
     return '''
 <w:p>
   <w:pPr>
     <w:jc w:val="center"/>
-    <w:spacing w:before="60" w:after="40"/>
+    <w:spacing w:before="40" w:after="40"/>
   </w:pPr>
   <w:r>
     <w:drawing>
@@ -234,21 +262,7 @@ class DocxGeneratorService {
       </wp:inline>
     </w:drawing>
   </w:r>
-</w:p>
-<w:p>
-  <w:pPr>
-    <w:jc w:val="center"/>
-    <w:spacing w:before="40" w:after="160"/>
-  </w:pPr>
-  <w:r>
-    <w:rPr>
-      <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
-      <w:b/>
-      <w:sz w:val="20"/>
-    </w:rPr>
-    <w:t>${_escapeXml(captionText)}</w:t>
-  </w:r>
-</w:p>''';
+</w:p>$captionXml''';
   }
 
   /// Bagikan file Word ke WhatsApp, email, atau drive

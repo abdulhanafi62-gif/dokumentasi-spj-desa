@@ -1,0 +1,7 @@
+*.apk
+*.aab
+*.zip
+build/
+.dart_tool/
+.packages
+.pub/

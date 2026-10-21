@@ -324,21 +324,19 @@ class _PreviewExportScreenState extends State<PreviewExportScreen> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  photo.caption.isNotEmpty
-                                      ? photo.caption
-                                      : (photo.stage != null && photo.stage!.isNotEmpty
-                                          ? 'Foto ${photo.stage}'
-                                          : 'Foto #${idx + 1}'),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                                if (photo.caption.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    photo.caption,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             );
                           },
@@ -375,20 +373,17 @@ class _PreviewExportScreenState extends State<PreviewExportScreen> {
                                           ),
                                   ),
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  photo.caption.isNotEmpty
-                                      ? photo.caption
-                                      : (photo.stage != null &&
-                                              photo.stage!.isNotEmpty
-                                          ? 'Foto ${photo.stage}'
-                                          : 'Foto Dokumentasi ${idx + 1}'),
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                                if (photo.caption.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    photo.caption,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           );

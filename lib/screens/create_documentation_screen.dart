@@ -127,9 +127,7 @@ class _CreateDocumentationScreenState extends State<CreateDocumentationScreen> {
       final newPhoto = PhotoItem(
         id: _uuid.v4(),
         filePath: processedFile.path,
-        caption: stageLabel != null
-            ? 'Dokumentasi $stageLabel'
-            : 'Dokumentasi ${_photos.length + 1}',
+        caption: stageLabel != null ? 'Titik $stageLabel' : '',
         stage: stageLabel,
         timestamp: DateTime.now(),
         latitude: lat,

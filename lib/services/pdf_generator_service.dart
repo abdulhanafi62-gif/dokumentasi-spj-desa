@@ -8,14 +8,14 @@ import '../models/photo_item.dart';
 
 class PdfGeneratorService {
   /// Menghasilkan file PDF standar A4 resmi sesuai format SPJ
-  /// [photosPerPage]: Jumlah maksimal foto per lembar A4 (1, 2, atau 4)
+  /// Mendukung susunan maksimal 4 foto per lembar (Grid 2x2) agar hemat kertas
   static Future<Uint8List> generateSpjPdf(
     DocumentationRecord record, {
     int photosPerPage = 4,
   }) async {
     final pdf = pw.Document();
 
-    // Baca byte seluruh foto terlebih dahulu
+    // Baca byte seluruh foto yang valid
     final List<Map<String, dynamic>> photoDataList = [];
     for (final photo in record.photos) {
       final file = File(photo.filePath);
@@ -28,7 +28,7 @@ class PdfGeneratorService {
       }
     }
 
-    // Bagi foto ke dalam halaman sesuai kuota foto per halaman (default: 4 foto per lembar A4)
+    // Kelompokkan foto ke halaman (default maksimal 4 foto per lembar A4)
     final List<List<Map<String, dynamic>>> pagesData = [];
     for (int i = 0; i < photoDataList.length; i += photosPerPage) {
       pagesData.add(
@@ -41,12 +41,12 @@ class PdfGeneratorService {
       );
     }
 
-    // Jika belum ada foto sama sekali, buat 1 halaman judul
+    // Jika belum ada foto, buat 1 halaman judul
     if (pagesData.isEmpty) {
       pdf.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+          margin: const pw.EdgeInsets.symmetric(horizontal: 36, vertical: 40),
           build: (context) {
             return pw.Center(
               child: pw.Text(
@@ -72,14 +72,14 @@ class PdfGeneratorService {
           margin: const pw.EdgeInsets.only(
             left: 28,
             right: 28,
-            top: 32,
+            top: 28,
             bottom: 24,
           ),
           build: (context) {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                // Judul Dokumen di bagian atas lembar A4
+                // Judul Dokumen di atas lembar A4
                 if (pageIdx == 0) ...[
                   pw.Text(
                     record.title.toUpperCase(),
@@ -87,10 +87,10 @@ class PdfGeneratorService {
                     style: pw.TextStyle(
                       fontSize: 14,
                       fontWeight: pw.FontWeight.bold,
-                      lineSpacing: 2,
+                      lineSpacing: 1.5,
                     ),
                   ),
-                  pw.SizedBox(height: 14),
+                  pw.SizedBox(height: 12),
                 ] else ...[
                   pw.Text(
                     '${record.title.toUpperCase()} (Lanjutan)',
@@ -104,19 +104,22 @@ class PdfGeneratorService {
                   pw.SizedBox(height: 10),
                 ],
 
-                // Tampilan Foto (Besar atau Grid 2x2)
+                // Area Foto Utama yang Memenuhi Lembar A4 Secara Efisien
                 pw.Expanded(
-                  child: _buildLayout(currentPhotos, photosPerPage),
+                  child: _buildAdaptivePhotosLayout(currentPhotos, photosPerPage),
                 ),
 
-                // Nomor Halaman di sudut bawah
-                pw.Align(
-                  alignment: pw.Alignment.bottomRight,
-                  child: pw.Text(
-                    'Halaman ${pageIdx + 1} dari ${pagesData.length}',
-                    style: const pw.TextStyle(
-                      fontSize: 9,
-                      color: PdfColors.grey600,
+                // Penanda halaman halus di pojok bawah
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(top: 4),
+                  child: pw.Align(
+                    alignment: pw.Alignment.bottomRight,
+                    child: pw.Text(
+                      'Halaman ${pageIdx + 1} dari ${pagesData.length}',
+                      style: const pw.TextStyle(
+                        fontSize: 8.5,
+                        color: PdfColors.grey500,
+                      ),
                     ),
                   ),
                 ),
@@ -130,187 +133,199 @@ class PdfGeneratorService {
     return await pdf.save();
   }
 
-  /// Membangun susunan foto agar proporsional dan mengisi lembar A4 secara rapi
-  static pw.Widget _buildLayout(
-      List<Map<String, dynamic>> photos, int targetPerPage) {
-    // Kasus 1: Hanya 1 Foto di Halaman (Ukuran Besar & Proporsional Mengisi A4)
-    if (photos.length == 1 && targetPerPage == 1) {
-      return pw.Center(
-        child: _buildPhotoCell(
-          photos[0]['item'],
-          photos[0]['image'],
-          maxHeight: 520,
-          maxWidth: 500,
-        ),
-      );
-    }
-
-    // Kasus 2: 2 Foto vertikal (jika dipilih mode 2 foto per halaman)
-    if (photos.length <= 2 && targetPerPage == 2) {
-      return pw.Column(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-        children: photos.map((data) {
-          return _buildPhotoCell(
-            data['item'],
-            data['image'],
-            maxHeight: 290,
-            maxWidth: 480,
-          );
-        }).toList(),
-      );
-    }
-
-    // Kasus 3: Jika hanya 1 foto tapi dalam mode 4 foto (tetap buat cukup besar dan rapi)
+  /// Membangun susunan foto agar proporsional, besar, dan memenuhi kertas tanpa boros ruang
+  static pw.Widget _buildAdaptivePhotosLayout(
+    List<Map<String, dynamic>> photos,
+    int targetPerPage,
+  ) {
+    // -------------------------------------------------------------
+    // KASUS 1: Hanya 1 Foto di Lembar Ini
+    // Foto tampil besar dan gagah memenuhi lembar A4 (seperti contoh pengguna)
+    // -------------------------------------------------------------
     if (photos.length == 1) {
       return pw.Center(
-        child: _buildPhotoCell(
+        child: _buildPhotoBox(
           photos[0]['item'],
           photos[0]['image'],
-          maxHeight: 460,
-          maxWidth: 480,
+          width: 500,
+          height: 640,
+          fit: pw.BoxFit.contain,
         ),
       );
     }
 
-    // Kasus 4: Jika ada 2 foto dalam mode 4 foto (Tampilkan bersebelahan rapi atau vertikal)
-    if (photos.length == 2) {
+    // -------------------------------------------------------------
+    // KASUS 2: Mode 2 Foto per Lembar
+    // 2 foto vertikal berukuran besar
+    // -------------------------------------------------------------
+    if (photos.length == 2 && targetPerPage == 2) {
       return pw.Column(
         mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
         children: [
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-            children: [
-              pw.Expanded(
-                child: _buildPhotoCell(
-                  photos[0]['item'],
-                  photos[0]['image'],
-                  maxHeight: 260,
-                  maxWidth: 245,
-                ),
-              ),
-              pw.SizedBox(width: 14),
-              pw.Expanded(
-                child: _buildPhotoCell(
-                  photos[1]['item'],
-                  photos[1]['image'],
-                  maxHeight: 260,
-                  maxWidth: 245,
-                ),
-              ),
-            ],
+          pw.Expanded(
+            child: _buildPhotoBox(
+              photos[0]['item'],
+              photos[0]['image'],
+              width: 500,
+              height: 320,
+              fit: pw.BoxFit.contain,
+            ),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Expanded(
+            child: _buildPhotoBox(
+              photos[1]['item'],
+              photos[1]['image'],
+              width: 500,
+              height: 320,
+              fit: pw.BoxFit.contain,
+            ),
           ),
         ],
       );
     }
 
-    // Kasus 5: 3 atau 4 Foto per Lembar (Grid 2x2 - 2 Kolom x 2 Baris)
+    // -------------------------------------------------------------
+    // KASUS 3: Ada 2 Foto dalam Mode 4 Foto (Tampilkan Berdampingan Rapi)
+    // -------------------------------------------------------------
+    if (photos.length == 2) {
+      return pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Expanded(
+            child: _buildPhotoBox(
+              photos[0]['item'],
+              photos[0]['image'],
+              width: 255,
+              height: 480,
+              fit: pw.BoxFit.contain,
+            ),
+          ),
+          pw.SizedBox(width: 12),
+          pw.Expanded(
+            child: _buildPhotoBox(
+              photos[1]['item'],
+              photos[1]['image'],
+              width: 255,
+              height: 480,
+              fit: pw.BoxFit.contain,
+            ),
+          ),
+        ],
+      );
+    }
+
+    // -------------------------------------------------------------
+    // KASUS 4: 3 atau 4 Foto per Lembar (Grid 2x2 Persis Seperti Gambar 2 Pengguna)
+    // Baris 1: Foto 1 & 2
+    // Baris 2: Foto 3 & 4
+    // Mengisi ~85% ruang kertas A4 tanpa menyia-nyiakan kertas!
+    // -------------------------------------------------------------
     final row1 = photos.sublist(0, 2);
     final row2 = photos.sublist(2, photos.length);
 
     return pw.Column(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        // Baris 1: Foto 1 & Foto 2
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Expanded(
-              child: _buildPhotoCell(
-                row1[0]['item'],
-                row1[0]['image'],
-                maxHeight: 235,
-                maxWidth: 245,
+        // Baris Pertama (Foto 1 & 2)
+        pw.Expanded(
+          child: pw.Row(
+            children: [
+              pw.Expanded(
+                child: _buildPhotoBox(
+                  row1[0]['item'],
+                  row1[0]['image'],
+                  width: 260,
+                  height: 340,
+                  fit: pw.BoxFit.contain,
+                ),
               ),
-            ),
-            pw.SizedBox(width: 14),
-            pw.Expanded(
-              child: _buildPhotoCell(
-                row1[1]['item'],
-                row1[1]['image'],
-                maxHeight: 235,
-                maxWidth: 245,
+              pw.SizedBox(width: 10),
+              pw.Expanded(
+                child: _buildPhotoBox(
+                  row1[1]['item'],
+                  row1[1]['image'],
+                  width: 260,
+                  height: 340,
+                  fit: pw.BoxFit.contain,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        pw.SizedBox(height: 10),
 
-        // Baris 2: Foto 3 & Foto 4 (jika ada)
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Expanded(
-              child: _buildPhotoCell(
-                row2[0]['item'],
-                row2[0]['image'],
-                maxHeight: 235,
-                maxWidth: 245,
+        // Baris Kedua (Foto 3 & 4)
+        pw.Expanded(
+          child: pw.Row(
+            children: [
+              pw.Expanded(
+                child: _buildPhotoBox(
+                  row2[0]['item'],
+                  row2[0]['image'],
+                  width: 260,
+                  height: 340,
+                  fit: pw.BoxFit.contain,
+                ),
               ),
-            ),
-            pw.SizedBox(width: 14),
-            pw.Expanded(
-              child: row2.length > 1
-                  ? _buildPhotoCell(
-                      row2[1]['item'],
-                      row2[1]['image'],
-                      maxHeight: 235,
-                      maxWidth: 245,
-                    )
-                  : pw.Container(),
-            ),
-          ],
+              pw.SizedBox(width: 10),
+              pw.Expanded(
+                child: row2.length > 1
+                    ? _buildPhotoBox(
+                        row2[1]['item'],
+                        row2[1]['image'],
+                        width: 260,
+                        height: 340,
+                        fit: pw.BoxFit.contain,
+                      )
+                    : pw.Container(),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  /// Membuat kotak bingkai foto dengan keterangan di bawahnya
-  static pw.Widget _buildPhotoCell(
+  /// Membuat elemen wadah foto beserta keterangan opsionalnya
+  static pw.Widget _buildPhotoBox(
     PhotoItem item,
     pw.MemoryImage image, {
-    required double maxHeight,
-    required double maxWidth,
+    required double width,
+    required double height,
+    required pw.BoxFit fit,
   }) {
-    final String captionText = item.caption.isNotEmpty
-        ? item.caption
-        : (item.stage != null && item.stage!.isNotEmpty
-            ? 'Foto ${item.stage}'
-            : 'Dokumentasi');
+    final bool hasCustomCaption = item.caption.trim().isNotEmpty &&
+        !item.caption.toLowerCase().startsWith('dokumentasi ');
 
     return pw.Column(
       mainAxisSize: pw.MainAxisSize.min,
+      mainAxisAlignment: pw.MainAxisAlignment.center,
       crossAxisAlignment: pw.CrossAxisAlignment.center,
       children: [
-        // Bingkai Foto
         pw.Container(
           constraints: pw.BoxConstraints(
-            maxHeight: maxHeight,
-            maxWidth: maxWidth,
-          ),
-          decoration: pw.BoxDecoration(
-            border: pw.Border.all(
-              color: PdfColors.grey400,
-              width: 0.8,
-            ),
-            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+            maxWidth: width,
+            maxHeight: hasCustomCaption ? height - 18 : height,
           ),
           child: pw.Image(
             image,
-            fit: pw.BoxFit.contain,
+            fit: fit,
           ),
         ),
-        pw.SizedBox(height: 5),
-        // Keterangan di bawah foto
-        pw.Text(
-          captionText,
-          textAlign: pw.TextAlign.center,
-          maxLines: 2,
-          style: pw.TextStyle(
-            fontSize: 10,
-            fontWeight: pw.FontWeight.bold,
+        if (hasCustomCaption) ...[
+          pw.SizedBox(height: 4),
+          pw.Text(
+            item.caption,
+            textAlign: pw.TextAlign.center,
+            maxLines: 2,
+            style: pw.TextStyle(
+              fontSize: 10,
+              fontWeight: pw.FontWeight.bold,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
