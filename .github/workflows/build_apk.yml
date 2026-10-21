@@ -32,6 +32,11 @@ jobs:
       - name: Scaffold Android Files
         run: flutter create . --org com.desaku --project-name dokumentasi_spj_desa --platforms=android
 
+      - name: Upgrade Kotlin Version
+        run: |
+          sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.22"/g' android/settings.gradle 2>/dev/null || true
+          sed -i "s/ext.kotlin_version = .*/ext.kotlin_version = '1.9.22'/g" android/build.gradle 2>/dev/null || true
+
       - name: Install Dependencies
         run: flutter pub get
 
