@@ -30,7 +30,7 @@ jobs:
           cache: true
 
       - name: Scaffold Android Files
-        run: flutter create . --org com.desaku --platforms=android
+        run: flutter create . --org com.desaku --project-name dokumentasi_spj_desa --platforms=android
 
       - name: Install Dependencies
         run: flutter pub get
