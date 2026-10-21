@@ -29,14 +29,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Scaffold Android Files
+        run: flutter create . --org com.desaku --platforms=android
+
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build Release APK
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Dokumentasi-SPJ-Desa-APK
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
