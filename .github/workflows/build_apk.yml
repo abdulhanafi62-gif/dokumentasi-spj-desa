@@ -32,6 +32,24 @@ jobs:
       - name: Scaffold Android Files
         run: flutter create . --org com.desaku --project-name dokumentasi_spj_desa --platforms=android
 
+      - name: Configure Android SDK versions
+        run: |
+          python3 -c "
+          with open('android/build.gradle', 'r') as f:
+              content = f.read()
+          patch = '''
+          allprojects {
+              ext.compileSdkVersion = 35
+              ext.targetSdkVersion = 35
+              ext.minSdkVersion = 21
+          }
+          '''
+          with open('android/build.gradle', 'w') as f:
+              f.write(patch + '\n' + content)
+          "
+          sed -i 's/compileSdk.*/compileSdk = 35/g' android/app/build.gradle || true
+          sed -i 's/compileSdkVersion.*/compileSdkVersion 35/g' android/app/build.gradle || true
+
       - name: Install Dependencies
         run: flutter pub get
 
