@@ -177,7 +177,7 @@ class PdfGeneratorService {
       return pw.Column(
         mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
         children: [
-          Row(
+          pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
             children: [
               pw.Expanded(
