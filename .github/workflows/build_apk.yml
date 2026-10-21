@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK and Play Store Bundle
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build Flutter APK
+    name: Build Flutter APK & AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -43,8 +43,17 @@ jobs:
       - name: Build Release APK
         run: flutter build apk --release
 
+      - name: Build Release App Bundle (for Google Play Store)
+        run: flutter build appbundle --release
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Dokumentasi-SPJ-Desa-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload Play Store AAB Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dokumentasi-SPJ-Desa-PlayStore-AAB
+          path: build/app/outputs/bundle/release/app-release.aab

@@ -7,6 +7,7 @@ class AppSettings {
   String districtName;
   String regencyName;
   String defaultYear;
+  int photosPerPage; // 1, 2, atau 4 (default 4 foto per lembar A4)
 
   AppSettings({
     this.watermarkEnabled = true,
@@ -17,6 +18,7 @@ class AppSettings {
     this.districtName = '',
     this.regencyName = '',
     this.defaultYear = '2026',
+    this.photosPerPage = 4,
   });
 
   Map<String, dynamic> toJson() => {
@@ -28,6 +30,7 @@ class AppSettings {
         'districtName': districtName,
         'regencyName': regencyName,
         'defaultYear': defaultYear,
+        'photosPerPage': photosPerPage,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -39,5 +42,6 @@ class AppSettings {
         districtName: json['districtName'] as String? ?? '',
         regencyName: json['regencyName'] as String? ?? '',
         defaultYear: json['defaultYear'] as String? ?? '2026',
+        photosPerPage: json['photosPerPage'] as int? ?? 4,
       );
 }

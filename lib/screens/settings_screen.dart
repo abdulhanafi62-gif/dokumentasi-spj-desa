@@ -224,6 +224,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildInfoRow('Kop Dokumen', 'Tanpa Kop Surat (Sesuai Permintaan)'),
                   _buildInfoRow('Tanda Tangan', 'Tanpa Kolom TTD (Sesuai Permintaan)'),
                   _buildInfoRow('Format Output', 'PDF & Word (.docx)'),
+                  const Divider(height: 20),
+                  const Text(
+                    'Tata Letak Default per Lembar A4:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<int>(
+                    value: _settings.photosPerPage,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 4,
+                        child: Text('4 Foto per Lembar (Grid 2x2 - Rekomendasi ATK)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 2,
+                        child: Text('2 Foto per Lembar (Ukuran Besar)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 1,
+                        child: Text('1 Foto per Lembar (Ukuran Penuh)'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _settings.photosPerPage = val);
+                        _saveSettings();
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
